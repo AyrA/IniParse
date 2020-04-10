@@ -62,6 +62,17 @@ namespace IniParse
             await SW.WriteLineAsync($"{Name}={Value}");
         }
 
+        #region Overrides
+
+        /// <summary>
+        /// Gets a string representation of this instance
+        /// </summary>
+        /// <returns>String representation</returns>
+        public override string ToString()
+        {
+            return $"INI Setting: {Name}={Value}";
+        }
+
         /// <summary>
         /// Validates this setting
         /// </summary>
@@ -83,5 +94,7 @@ namespace IniParse
                 throw ex;
             }
         }
+
+        #endregion
     }
 }

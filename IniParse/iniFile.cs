@@ -220,41 +220,6 @@ namespace IniParse
         }
 
         /// <summary>
-        /// Validates this file
-        /// </summary>
-        public override void Validate()
-        {
-            var N = Names;
-            if (N.Count(m => m == null) > 1)
-            {
-                var ex = new ValidationException($"Duplicate null-section");
-                var Indexes = _sections
-                        .Select((v, i) => v.Name == null ? i : -1)
-                        .Where(m => m >= 0)
-                        .ToArray();
-                ex.Data.Add("Sections", Indexes);
-                throw ex;
-            }
-            foreach (var Name in N)
-            {
-                if (N.Count(m => m == Name) > 1)
-                {
-                    var ex = new ValidationException($"Duplicate section: {Name}");
-                    var Indexes = _sections
-                        .Select((v, i) => v.Name == Name ? i : -1)
-                        .Where(m => m >= 0)
-                        .ToArray();
-                    ex.Data.Add("Sections", Indexes);
-                    throw ex;
-                }
-            }
-            foreach (var S in Sections)
-            {
-                S.Validate();
-            }
-        }
-
-        /// <summary>
         /// Loads ini content from an existing file
         /// </summary>
         /// <param name="FileName">File name</param>
@@ -393,6 +358,54 @@ namespace IniParse
                 EndComments = Comments.ToArray();
             }
         }
+
+        #region Overrides
+
+        /// <summary>
+        /// Gets a string representation of this instance
+        /// </summary>
+        /// <returns>String representation</returns>
+        public override string ToString()
+        {
+            return $"INI file with {_sections.Count} sections";
+        }
+
+        /// <summary>
+        /// Validates this file
+        /// </summary>
+        public override void Validate()
+        {
+            var N = Names;
+            if (N.Count(m => m == null) > 1)
+            {
+                var ex = new ValidationException($"Duplicate null-section");
+                var Indexes = _sections
+                        .Select((v, i) => v.Name == null ? i : -1)
+                        .Where(m => m >= 0)
+                        .ToArray();
+                ex.Data.Add("Sections", Indexes);
+                throw ex;
+            }
+            foreach (var Name in N)
+            {
+                if (N.Count(m => m == Name) > 1)
+                {
+                    var ex = new ValidationException($"Duplicate section: {Name}");
+                    var Indexes = _sections
+                        .Select((v, i) => v.Name == Name ? i : -1)
+                        .Where(m => m >= 0)
+                        .ToArray();
+                    ex.Data.Add("Sections", Indexes);
+                    throw ex;
+                }
+            }
+            foreach (var S in Sections)
+            {
+                S.Validate();
+            }
+        }
+
+        #endregion
 
         #region Static Members
 

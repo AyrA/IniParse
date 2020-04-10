@@ -82,19 +82,30 @@ namespace IniParse
         {
             if (Name != null)
             {
-                if(!Tools.IsEmpty(Comments))
+                if (!Tools.IsEmpty(Comments))
                 {
-                    foreach(var L in Comments)
+                    foreach (var L in Comments)
                     {
                         await SW.WriteLineAsync($"{CommentChar}{L}");
                     }
                 }
                 await SW.WriteLineAsync($"[{Name}]");
             }
-            foreach(var S in Settings)
+            foreach (var S in Settings)
             {
                 await S.ExportSetting(SW, CommentChar);
             }
+        }
+
+        #region Overrides
+
+        /// <summary>
+        /// Gets a string representation of this instance
+        /// </summary>
+        /// <returns>String representation</returns>
+        public override string ToString()
+        {
+            return $"INI Section \"{Name}\" with {Settings.Count} settings";
         }
 
         /// <summary>
@@ -106,18 +117,20 @@ namespace IniParse
         /// </remarks>
         public override void Validate()
         {
-            foreach(var S in Settings)
+            foreach (var S in Settings)
             {
                 try
                 {
                     S.Validate();
                 }
-                catch(ValidationException ex)
+                catch (ValidationException ex)
                 {
                     ex.Data.Add("Section", Name);
                     throw ex;
                 }
             }
         }
+
+        #endregion
     }
 }
