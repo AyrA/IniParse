@@ -25,6 +25,15 @@ namespace IniParse
         public char CommentChar { get; set; } = ';';
 
         /// <summary>
+        /// Gets or sets the handling of whitespace in the INI file
+        /// </summary>
+        /// <remarks>
+        /// This has only an effect when loading the file.
+        /// Writing is always done "as-is"
+        /// </remarks>
+        public WhitespaceMode WhitespaceHandling { get; set; } = WhitespaceMode.AsIs;
+
+        /// <summary>
         /// Gets all sections of this file
         /// </summary>
         public IniSection[] Sections
@@ -246,6 +255,33 @@ namespace IniParse
         }
 
         /// <summary>
+        /// Loads ini content from an existing file
+        /// </summary>
+        /// <param name="FileName">File name</param>
+        /// <returns>Task</returns>
+        /// <remarks>This discards any existing data</remarks>
+        public async Task Load(string FileName)
+        {
+            using (var SR = File.OpenText(FileName))
+            {
+                await Load(SR);
+            }
+        }
+
+        /// <summary>
+        /// Loads ini content 
+        /// </summary>
+        /// <param name="SR">Open stream reader</param>
+        /// <returns>Task</returns>
+        /// <remarks>This discards any existing data</remarks>
+        public async Task Load(StreamReader SR)
+        {
+            EndComments = null;
+            _sections.Clear();
+            await ReadData(SR);
+        }
+
+        /// <summary>
         /// Reads an ini file asynchronously
         /// </summary>
         /// <param name="SR">Open Stream Reader</param>
@@ -261,7 +297,7 @@ namespace IniParse
             //Matches sections and extracts the name
             var Section = new Regex(@"^\s*\[(.*)\]\s*$");
             //Matches settings and extracts name + value
-            var Setting = new Regex(@"^\s*([^=]*)=(.*)$");
+            var Setting = new Regex(@"^([^=]*)=(.*)$");
             //Currently processed line
             string Line;
             do
@@ -278,11 +314,16 @@ namespace IniParse
                     if (Line[0] == CommentChar)
                     {
                         //Add the comment without the comment character
+                        //Comments are always preserved regardless of the IgnoreWhitespace setting
                         Comments.Add(Line.Substring(1));
                     }
                     else if (Section.IsMatch(Line))
                     {
                         var SectionName = Section.Match(Line).Groups[1].Value;
+                        if(WhitespaceHandling.HasFlag(WhitespaceMode.TrimSections))
+                        {
+                            SectionName = SectionName.Trim();
+                        }
                         //Save old section
                         if (CurrentSection != null && !TempSections.Contains(CurrentSection))
                         {
@@ -292,7 +333,7 @@ namespace IniParse
                         CurrentSection = TempSections.FirstOrDefault(m => SectionName.Equals(m.Name));
                         if (CurrentSection == null)
                         {
-                            CurrentSection = new IniSection(Section.Match(Line).Groups[1].Value);
+                            CurrentSection = new IniSection(SectionName);
                         }
                         if (Comments.Count > 0)
                         {
@@ -312,7 +353,17 @@ namespace IniParse
                     {
                         //Setting for the current section
                         var Matches = Setting.Match(Line);
-                        var CurrentSetting = new IniSetting(Matches.Groups[1].Value, Matches.Groups[2].Value);
+                        var SettingName = Matches.Groups[1].Value;
+                        var SettingValue = Matches.Groups[2].Value;
+                        if (WhitespaceHandling.HasFlag(WhitespaceMode.TrimNames))
+                        {
+                            SettingName = SettingName.Trim();
+                        }
+                        if (WhitespaceHandling.HasFlag(WhitespaceMode.TrimValues))
+                        {
+                            SettingValue = SettingValue.Trim();
+                        }
+                        var CurrentSetting = new IniSetting(SettingName, SettingValue);
                         //Create a "null" section for settings that appear before the first section
                         if (CurrentSection == null)
                         {
