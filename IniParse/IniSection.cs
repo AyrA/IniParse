@@ -114,7 +114,7 @@ namespace IniParse
                 }
                 catch(ValidationException ex)
                 {
-                    ex.Data.Add("Section", this);
+                    ex.Data.Add("Section", Name);
                     throw ex;
                 }
             }

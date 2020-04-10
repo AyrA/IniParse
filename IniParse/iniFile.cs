@@ -219,8 +219,11 @@ namespace IniParse
             if (N.Count(m => m == null) > 1)
             {
                 var ex = new ValidationException($"Duplicate null-section");
-                ex.Data.Add("File", this);
-                ex.Data.Add("Sections", _sections.Where(m => m.Name == null).ToArray());
+                var Indexes = _sections
+                        .Select((v, i) => v.Name == null ? i : -1)
+                        .Where(m => m >= 0)
+                        .ToArray();
+                ex.Data.Add("Sections", Indexes);
                 throw ex;
             }
             foreach (var Name in N)
@@ -228,8 +231,11 @@ namespace IniParse
                 if (N.Count(m => m == Name) > 1)
                 {
                     var ex = new ValidationException($"Duplicate section: {Name}");
-                    ex.Data.Add("File", this);
-                    ex.Data.Add("Sections", _sections.Where(m => m.Name == Name).ToArray());
+                    var Indexes = _sections
+                        .Select((v, i) => v.Name == Name ? i : -1)
+                        .Where(m => m >= 0)
+                        .ToArray();
+                    ex.Data.Add("Sections", Indexes);
                     throw ex;
                 }
             }
@@ -255,7 +261,7 @@ namespace IniParse
             //Matches sections and extracts the name
             var Section = new Regex(@"^\s*\[(.*)\]\s*$");
             //Matches settings and extracts name + value
-            var Setting = new Regex(@"^\s*([^=]+)=(.*)$");
+            var Setting = new Regex(@"^\s*([^=]*)=(.*)$");
             //Currently processed line
             string Line;
             do
@@ -278,7 +284,7 @@ namespace IniParse
                     {
                         var SectionName = Section.Match(Line).Groups[1].Value;
                         //Save old section
-                        if (CurrentSection != null)
+                        if (CurrentSection != null && !TempSections.Contains(CurrentSection))
                         {
                             TempSections.Add(CurrentSection);
                         }
@@ -307,15 +313,15 @@ namespace IniParse
                         //Setting for the current section
                         var Matches = Setting.Match(Line);
                         var CurrentSetting = new IniSetting(Matches.Groups[1].Value, Matches.Groups[2].Value);
-                        if (Comments.Count > 0)
-                        {
-                            CurrentSection.Comments = Comments.ToArray();
-                            Comments.Clear();
-                        }
                         //Create a "null" section for settings that appear before the first section
                         if (CurrentSection == null)
                         {
                             CurrentSection = new IniSection();
+                        }
+                        if (Comments.Count > 0)
+                        {
+                            CurrentSetting.Comments = Comments.ToArray();
+                            Comments.Clear();
                         }
                         CurrentSection.Settings.Add(CurrentSetting);
                     }

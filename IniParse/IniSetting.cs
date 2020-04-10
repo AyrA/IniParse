@@ -78,7 +78,8 @@ namespace IniParse
             }
             if (ex != null)
             {
-                ex.Data.Add("Setting", this);
+                ex.Data.Add("Setting.Name", Name);
+                ex.Data.Add("Setting.Value", Value);
                 throw ex;
             }
         }
