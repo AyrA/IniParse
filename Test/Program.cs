@@ -11,10 +11,57 @@ namespace Test
     {
         static void Main(string[] args)
         {
+            //Load test INI
             var IF = new IniParse.IniFile();
             IF.WhitespaceHandling = IniParse.WhitespaceMode.TrimNames | IniParse.WhitespaceMode.TrimSections;
             IF.Load(@"Test.INI").Wait();
             IF.Validate();
+            HighlightFile(IF);
+
+            Console.Write(string.Empty.PadRight(Console.BufferWidth * 3, '#'));
+
+            //Create a new INI file
+            IF = new IniParse.IniFile();
+            //New section
+            var TestSection = IF.AddSection("TEST");
+            TestSection.Settings.Add(new IniParse.IniSetting("Name", "Value 1"));
+            TestSection.Settings.Add(new IniParse.IniSetting("Name", "Value 2")
+            {
+                Comments = new string[] { "Duplicate setting is possible" }
+            });
+            TestSection.Settings.Add(new IniParse.IniSetting("\tWhitespace ", " Whitespace Value")
+            {
+                Comments = new string[] { "Whitespace is always taken as-is when editing" }
+            });
+
+            //Adding an empty string section
+            TestSection = IF.AddSection("");
+            TestSection.Comments = "Empty Section Comment 1||Empty Section Comment 3".Split('|');
+            TestSection.Settings.Add(new IniParse.IniSetting("Name", "Value"));
+
+            //Adding the null-section
+            TestSection = IF.AddSection((string)null);
+            TestSection.Comments = new string[]
+            {
+                "The comments of the null section serve as file header",
+                $"Current Date: {DateTime.Now}",
+                $"Creator:      {Environment.UserName}"
+            };
+            TestSection.Settings.Add(new IniParse.IniSetting("FirstSetting", "Setting without a section"));
+
+            IF.EndComments = new string[] { "This will be the last line of the file" };
+
+            //INI file should still be considered valid
+            IF.Validate();
+
+            HighlightFile(IF);
+
+            Console.Error.WriteLine("#END");
+            Console.ReadKey(true);
+        }
+
+        static void HighlightFile(IniParse.IniFile IF)
+        {
             //Export file with text formatting for better readability
             foreach (var Section in IF.Sections)
             {
@@ -63,15 +110,6 @@ namespace Test
                 }
             }
             Console.ResetColor();
-            /*
-            //Export using built-in exporter
-            using (var SW = new StreamWriter(Console.OpenStandardOutput()))
-            {
-                IF.ExportFile(SW).Wait();
-            }
-            //*/
-            Console.Error.WriteLine("#END");
-            Console.ReadKey(true);
         }
     }
 }
