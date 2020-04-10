@@ -90,6 +90,18 @@ namespace IniParse
         }
 
         /// <summary>
+        /// Gets all values with the given name
+        /// </summary>
+        /// <param name="SettingName">Setting name</param>
+        /// <returns>Found Values</returns>
+        public string[] GetValues(string SettingName)
+        {
+            return GetAll(SettingName)
+                .Select(m => m.Value)
+                .ToArray();
+        }
+
+        /// <summary>
         /// Exports this section
         /// </summary>
         /// <param name="SW">Location to write contents to</param>
