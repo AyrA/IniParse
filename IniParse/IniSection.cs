@@ -10,7 +10,7 @@ namespace IniParse
     /// <summary>
     /// Represents a section in an ini file
     /// </summary>
-    public class IniSection
+    public class IniSection : Validateable
     {
         /// <summary>
         /// Gets or sets the name of the section
@@ -94,6 +94,29 @@ namespace IniParse
             foreach(var S in Settings)
             {
                 await S.ExportSetting(SW, CommentChar);
+            }
+        }
+
+        /// <summary>
+        /// Validates this section
+        /// </summary>
+        /// <remarks>
+        /// Sections are allowed to have duplicate settings by default.
+        /// Check for duplicates yourself if you don't want them.
+        /// </remarks>
+        public override void Validate()
+        {
+            foreach(var S in Settings)
+            {
+                try
+                {
+                    S.Validate();
+                }
+                catch(ValidationException ex)
+                {
+                    ex.Data.Add("Section", this);
+                    throw ex;
+                }
             }
         }
     }

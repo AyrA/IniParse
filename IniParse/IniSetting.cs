@@ -9,7 +9,7 @@ namespace IniParse
     /// <summary>
     /// Represents a single setting in an INI file
     /// </summary>
-    public class IniSetting
+    public class IniSetting : Validateable
     {
         /// <summary>
         /// Gets or sets the comments for this setting
@@ -52,14 +52,35 @@ namespace IniParse
         /// <returns>Task</returns>
         public async Task ExportSetting(StreamWriter SW, char CommentChar)
         {
-            if(!Tools.IsEmpty(Comments))
+            if (!Tools.IsEmpty(Comments))
             {
-                foreach(var L in Comments)
+                foreach (var L in Comments)
                 {
                     await SW.WriteLineAsync($"{CommentChar}{L}");
                 }
             }
             await SW.WriteLineAsync($"{Name}={Value}");
+        }
+
+        /// <summary>
+        /// Validates this setting
+        /// </summary>
+        public override void Validate()
+        {
+            ValidationException ex = null;
+            if (Name == null)
+            {
+                ex = new ValidationException("Setting name can't be null.");
+            }
+            if (Value == null && ex == null)
+            {
+                ex = new ValidationException("Setting value can't be null.");
+            }
+            if (ex != null)
+            {
+                ex.Data.Add("Setting", this);
+                throw ex;
+            }
         }
     }
 }

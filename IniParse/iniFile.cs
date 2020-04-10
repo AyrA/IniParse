@@ -11,7 +11,7 @@ namespace IniParse
     /// <summary>
     /// Provides Read/Write access to an ini file
     /// </summary>
-    public class IniFile
+    public class IniFile : Validateable
     {
         /// <summary>
         /// INI sections
@@ -190,6 +190,8 @@ namespace IniParse
         /// <returns>Task</returns>
         public async Task ExportFile(StreamWriter SW)
         {
+            Validate();
+
             var EmptySection = Sections.FirstOrDefault(m => m.Name == null);
             if (EmptySection != null)
             {
@@ -205,6 +207,35 @@ namespace IniParse
                 {
                     await SW.WriteLineAsync($"{CommentChar}{L}");
                 }
+            }
+        }
+
+        /// <summary>
+        /// Validates this file
+        /// </summary>
+        public override void Validate()
+        {
+            var N = Names;
+            if (N.Count(m => m == null) > 1)
+            {
+                var ex = new ValidationException($"Duplicate null-section");
+                ex.Data.Add("File", this);
+                ex.Data.Add("Sections", _sections.Where(m => m.Name == null).ToArray());
+                throw ex;
+            }
+            foreach (var Name in N)
+            {
+                if (N.Count(m => m == Name) > 1)
+                {
+                    var ex = new ValidationException($"Duplicate section: {Name}");
+                    ex.Data.Add("File", this);
+                    ex.Data.Add("Sections", _sections.Where(m => m.Name == Name).ToArray());
+                    throw ex;
+                }
+            }
+            foreach (var S in Sections)
+            {
+                S.Validate();
             }
         }
 
