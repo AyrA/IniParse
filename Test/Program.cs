@@ -14,6 +14,7 @@ namespace Test
             //Load test INI
             var IF = new IniParse.IniFile();
             IF.WhitespaceHandling = IniParse.WhitespaceMode.TrimNames | IniParse.WhitespaceMode.TrimSections;
+            IF.CaseHandling = IniParse.CaseSensitivity.CaseInsensitiveSection;
             IF.Load(@"Test.INI").Wait();
             IF.Validate();
             HighlightFile(IF);
