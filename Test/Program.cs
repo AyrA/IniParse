@@ -50,12 +50,37 @@ namespace Test
             };
             TestSection.Settings.Add(new IniParse.IniSetting("FirstSetting", "Setting without a section"));
 
+            //Add a setting directly
+            IF["NewSection1", "NewSetting1"] = "NewValue1";
+            IF["NewSection2", "NewSetting2"] = "NewValue2";
+            IF["NewSection3", "NewSetting3-1"] = "NewValue3-1";
+            IF["NewSection3", "NewSetting3-2"] = "NewValue3-2";
+            //Delete a setting directly, this should also delete the section that is now empty
+            IF["NewSection2", "NewSetting2"] = null;
+            //Delete a setting directly, this should not delete the section because it's not empty
+            IF["NewSection3", "NewSetting3-1"] = null;
+
             IF.EndComments = new string[] { "This will be the last line of the file" };
 
             //INI file should still be considered valid
             IF.Validate();
 
             HighlightFile(IF);
+
+            //Try to store an invalid value
+            IF["[THIS_IS_VALID]", "THIS=IS=INVALID"] = "THIS=IS=VALID";
+            try
+            {
+                IF.Validate();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Validation failed: {0}", ex.Message);
+                foreach (var e in ex.Data.Keys)
+                {
+                    Console.WriteLine("{0}={1}", e, ex.Data[e]);
+                }
+            }
 
             Console.Error.WriteLine("#END");
             Console.ReadKey(true);
