@@ -34,6 +34,15 @@ namespace IniParse
         public WhitespaceMode WhitespaceHandling { get; set; } = WhitespaceMode.AsIs;
 
         /// <summary>
+        /// Gets or sets case sensitivity handling in the INI file
+        /// </summary>
+        /// <remarks>
+        /// This has no effect when exporting to file,
+        /// it only affects loading, searching and editing
+        /// </remarks>
+        public CaseSensitivity CaseHandling { get; set; } = CaseSensitivity.AsIs;
+
+        /// <summary>
         /// Gets all sections of this file
         /// </summary>
         public IniSection[] Sections
@@ -70,7 +79,7 @@ namespace IniParse
         {
             get
             {
-                return Sections.FirstOrDefault(m => m.Name == name);
+                return Sections.FirstOrDefault(m => SecEq(m.Name, name));
             }
         }
 
@@ -119,7 +128,7 @@ namespace IniParse
         public void RemoveSection(string SectionName)
         {
             _sections = _sections
-                .Where(m => m.Name != SectionName)
+                .Where(m => !SecEq(m.Name, SectionName))
                 .ToList();
         }
 
@@ -152,7 +161,7 @@ namespace IniParse
         /// <param name="Section">Existing section</param>
         public void InsertSection(int Index, IniSection Section)
         {
-            if (_sections.Any(m => m.Name == Section.Name))
+            if (_sections.Any(m => SecEq(m.Name, Section.Name)))
             {
                 throw new ArgumentException("A section with this name already exists");
             }
@@ -184,7 +193,7 @@ namespace IniParse
             }
             else
             {
-                if (_sections.Any(m => m.Name == Section.Name))
+                if (_sections.Any(m => SecEq(m.Name, Section.Name)))
                 {
                     throw new ArgumentException("A section with this name already exists");
                 }
@@ -264,9 +273,9 @@ namespace IniParse
             {
                 _sections = _sections.OrderByDescending(m => m.Name).ToList();
             }
-            if(Recursive)
+            if (Recursive)
             {
-                foreach(var s in _sections)
+                foreach (var s in _sections)
                 {
                     s.Sort(Ascending);
                 }
@@ -277,6 +286,33 @@ namespace IniParse
                 _sections.Remove(NullSection);
                 _sections.Insert(0, NullSection);
             }
+        }
+
+        /// <summary>
+        /// Checks if two section names are equal under the current <see cref="CaseHandling"/> flags
+        /// </summary>
+        /// <param name="A">Section Name</param>
+        /// <param name="B">Section name</param>
+        /// <returns>true, if considered identical</returns>
+        private bool SecEq(string A, string B)
+        {
+            if (A == null && B == null)
+            {
+                return true;
+            }
+            else if (A == null)
+            {
+                return false;
+            }
+            else if (B == null)
+            {
+                return false;
+            }
+            if (CaseHandling.HasFlag(CaseSensitivity.CaseInsensitiveSection))
+            {
+                return A.ToLower() == B.ToLower();
+            }
+            return A == B;
         }
 
         /// <summary>
@@ -328,7 +364,7 @@ namespace IniParse
                             TempSections.Add(CurrentSection);
                         }
                         //Get existing section of the same name (if any)
-                        CurrentSection = TempSections.FirstOrDefault(m => SectionName.Equals(m.Name));
+                        CurrentSection = TempSections.FirstOrDefault(m => SecEq(SectionName, m.Name));
                         if (CurrentSection == null)
                         {
                             CurrentSection = new IniSection(SectionName);
@@ -380,6 +416,11 @@ namespace IniParse
                     }
                 }
             } while (Line != null);
+            //Apply case handling to all sections
+            foreach(var Entry in TempSections)
+            {
+                Entry.CaseHandling = CaseHandling;
+            }
             _sections = TempSections;
             //Add last section
             if (CurrentSection != null)

@@ -29,7 +29,12 @@ namespace IniParse
         public string[] Comments { get; set; }
 
         /// <summary>
-        /// Gets the setting with the given name
+        /// Gets or sets the case sensitivity handling when searching for names
+        /// </summary>
+        public CaseSensitivity CaseHandling { get; set; }
+
+        /// <summary>
+        /// Gets the first setting with the given name
         /// </summary>
         /// <param name="name">Setting name</param>
         /// <returns>Setting</returns>
@@ -37,7 +42,7 @@ namespace IniParse
         {
             get
             {
-                return Settings.FirstOrDefault(m => m.Name == name);
+                return Settings.FirstOrDefault(m => SetEq(m.Name, name));
             }
         }
 
@@ -70,6 +75,18 @@ namespace IniParse
         {
             Name = SectionName;
             Settings = new List<IniSetting>();
+        }
+
+        /// <summary>
+        /// Gets all settings with the given name
+        /// </summary>
+        /// <param name="SettingName">Setting name</param>
+        /// <returns>Found settings</returns>
+        public IniSetting[] GetAll(string SettingName)
+        {
+            return Settings
+                .Where(m => SetEq(m.Name, SettingName))
+                .ToArray();
         }
 
         /// <summary>
@@ -111,6 +128,33 @@ namespace IniParse
             {
                 Settings.Sort((n, m) => m.Name.CompareTo(n.Name));
             }
+        }
+
+        /// <summary>
+        /// Checks if two setting names are equal under the current <see cref="CaseHandling"/> flags
+        /// </summary>
+        /// <param name="A">Setting Name</param>
+        /// <param name="B">Setting name</param>
+        /// <returns>true, if considered identical</returns>
+        private bool SetEq(string A, string B)
+        {
+            if (A == null && B == null)
+            {
+                return true;
+            }
+            else if (A == null)
+            {
+                return false;
+            }
+            else if (B == null)
+            {
+                return false;
+            }
+            if (CaseHandling.HasFlag(CaseSensitivity.CaseInsensitiveSetting))
+            {
+                return A.ToLower() == B.ToLower();
+            }
+            return A == B;
         }
 
         #region Overrides
