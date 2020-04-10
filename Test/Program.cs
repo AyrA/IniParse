@@ -72,6 +72,7 @@ namespace Test
             try
             {
                 IF.Validate();
+                throw new Exception("INI is supposed to be invalid but IF.Validate() did not throw");
             }
             catch (Exception ex)
             {
