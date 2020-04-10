@@ -133,6 +133,12 @@ namespace IniParse
         /// </remarks>
         public override void Validate()
         {
+            if (Name != null && Name.Any(m => Tools.ForbiddenHeaderChar.Contains(m)))
+            {
+                var ex = new ValidationException("Forbidden character in section name");
+                ex.Data.Add("Section", Name);
+                throw ex;
+            }
             foreach (var S in Settings)
             {
                 try

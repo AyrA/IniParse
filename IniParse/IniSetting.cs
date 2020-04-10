@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -83,9 +84,17 @@ namespace IniParse
             {
                 ex = new ValidationException("Setting name can't be null.");
             }
-            if (Value == null && ex == null)
+            else if (Name.Any(m => Tools.ForbiddenNameChar.Contains(m)))
+            {
+                ex = new ValidationException("Forbidden character in setting name");
+            }
+            else if (Value == null)
             {
                 ex = new ValidationException("Setting value can't be null.");
+            }
+            else if (Value.Any(m => Tools.ForbiddenValueChar.Contains(m)))
+            {
+                ex = new ValidationException("Forbidden character in setting value");
             }
             if (ex != null)
             {
