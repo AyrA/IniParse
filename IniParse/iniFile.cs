@@ -8,8 +8,14 @@ using System.Threading.Tasks;
 
 namespace IniParse
 {
+    /// <summary>
+    /// Provides Read/Write access to an ini file
+    /// </summary>
     public class IniFile
     {
+        /// <summary>
+        /// INI sections
+        /// </summary>
         private List<IniSection> _sections;
 
         public char CommentChar { get; set; } = ';';
@@ -65,26 +71,26 @@ namespace IniParse
             }
         }
 
-        public void Remove(string SectionName)
+        public void RemoveSection(string SectionName)
         {
             _sections = _sections
                 .Where(m => m.Name != SectionName)
                 .ToList();
         }
 
-        public void RemoveAt(int Index)
+        public void RemoveSectionAt(int Index)
         {
             _sections.RemoveAt(Index);
         }
 
-        public IniSection Insert(int Index, string SectionName)
+        public IniSection InsertSection(int Index, string SectionName)
         {
             var Section = new IniSection(SectionName);
-            Insert(Index, Section);
+            InsertSection(Index, Section);
             return Section;
         }
 
-        public void Insert(int Index, IniSection Section)
+        public void InsertSection(int Index, IniSection Section)
         {
             if (_sections.Any(m => m.Name == Section.Name))
             {
@@ -93,19 +99,19 @@ namespace IniParse
             _sections.Insert(Index, Section);
         }
 
-        public IniSection Add(string SectionName)
+        public IniSection AddSection(string SectionName)
         {
             var Section = new IniSection(SectionName);
-            Add(Section);
+            AddSection(Section);
             return Section;
         }
 
-        public void Add(IniSection Section)
+        public void AddSection(IniSection Section)
         {
             //Null section is always first
             if (Section.Name == null)
             {
-                Insert(0, Section);
+                InsertSection(0, Section);
             }
             else
             {
@@ -117,11 +123,16 @@ namespace IniParse
             }
         }
 
-        public async Task Export(StreamWriter SW)
+        public async Task ExportFile(StreamWriter SW)
         {
-            foreach (var Section in Sections)
+            var EmptySection = Sections.FirstOrDefault(m => m.Name == null);
+            if (EmptySection != null)
             {
-                await Section.Export(SW, CommentChar);
+                await EmptySection.ExportSection(SW, CommentChar);
+            }
+            foreach (var Section in Sections.Where(m => m.Name != null))
+            {
+                await Section.ExportSection(SW, CommentChar);
             }
             if (!Tools.IsEmpty(EndComments))
             {

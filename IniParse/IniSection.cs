@@ -42,7 +42,7 @@ namespace IniParse
             Settings = new List<IniSetting>();
         }
 
-        public async Task Export(StreamWriter SW, char CommentChar)
+        public async Task ExportSection(StreamWriter SW, char CommentChar)
         {
             if (Name != null)
             {
@@ -57,7 +57,7 @@ namespace IniParse
             }
             foreach(var S in Settings)
             {
-                await S.Export(SW, CommentChar);
+                await S.ExportSetting(SW, CommentChar);
             }
         }
     }

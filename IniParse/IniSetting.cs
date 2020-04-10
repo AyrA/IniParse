@@ -23,7 +23,7 @@ namespace IniParse
             Value = SettingValue;
         }
 
-        public async Task Export(StreamWriter SW, char CommentChar)
+        public async Task ExportSetting(StreamWriter SW, char CommentChar)
         {
             if(!Tools.IsEmpty(Comments))
             {
