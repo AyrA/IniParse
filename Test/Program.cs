@@ -11,7 +11,9 @@ namespace Test
     {
         static void Main(string[] args)
         {
-            var IF = new IniParse.IniFile(@"Test.INI");
+            var IF = new IniParse.IniFile();
+            IF.WhitespaceHandling = IniParse.WhitespaceMode.TrimNames | IniParse.WhitespaceMode.TrimSections;
+            IF.Load(@"Test.INI").Wait();
             IF.Validate();
             //Export file with text formatting for better readability
             foreach (var Section in IF.Sections)
@@ -52,7 +54,7 @@ namespace Test
                     Console.WriteLine(Setting.Value);
                 }
             }
-            if(IF.EndComments!=null)
+            if (IF.EndComments != null)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
                 foreach (var L in IF.EndComments)
