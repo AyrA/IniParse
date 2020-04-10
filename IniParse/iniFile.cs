@@ -18,8 +18,15 @@ namespace IniParse
         /// </summary>
         private List<IniSection> _sections;
 
+        /// <summary>
+        /// Character to introduce commented lines
+        /// </summary>
+        /// <remarks>The default is a semicolon, but a '#' is also common</remarks>
         public char CommentChar { get; set; } = ';';
 
+        /// <summary>
+        /// Gets all sections of this file
+        /// </summary>
         public IniSection[] Sections
         {
             get
@@ -28,8 +35,15 @@ namespace IniParse
             }
         }
 
+        /// <summary>
+        /// Gets or sets the comments that follow the last section
+        /// </summary>
         public string[] EndComments { get; set; }
 
+        /// <summary>
+        /// Gets all section names
+        /// </summary>
+        /// <remarks>This is in the order they're defined in the INI file</remarks>
         public string[] Names
         {
             get
@@ -38,6 +52,11 @@ namespace IniParse
             }
         }
 
+        /// <summary>
+        /// Gets a named section
+        /// </summary>
+        /// <param name="name">Section name</param>
+        /// <returns>Section, or null if not found</returns>
         public IniSection this[string name]
         {
             get
@@ -46,11 +65,18 @@ namespace IniParse
             }
         }
 
+        /// <summary>
+        /// Creates an empty ini file
+        /// </summary>
         public IniFile()
         {
             _sections = new List<IniSection>();
         }
 
+        /// <summary>
+        /// Loads an ini file from the given file name
+        /// </summary>
+        /// <param name="FileName">File name</param>
         public IniFile(string FileName)
         {
             using (var SR = File.OpenText(FileName))
@@ -59,6 +85,12 @@ namespace IniParse
             }
         }
 
+        /// <summary>
+        /// Loads an ini file from the given stream
+        /// </summary>
+        /// <param name="IniContent">INI content</param>
+        /// <param name="IniEncoding">Stream Encoding, default is UTF-8</param>
+        /// <remarks>The stream is not closed</remarks>
         public IniFile(Stream IniContent, Encoding IniEncoding = null)
         {
             if (IniEncoding == null)
@@ -71,6 +103,10 @@ namespace IniParse
             }
         }
 
+        /// <summary>
+        /// Removes a named section
+        /// </summary>
+        /// <param name="SectionName">Section name</param>
         public void RemoveSection(string SectionName)
         {
             _sections = _sections
@@ -78,11 +114,21 @@ namespace IniParse
                 .ToList();
         }
 
+        /// <summary>
+        /// Removes the section at the given position
+        /// </summary>
+        /// <param name="Index">Section position</param>
         public void RemoveSectionAt(int Index)
         {
             _sections.RemoveAt(Index);
         }
 
+        /// <summary>
+        /// Inserts a new section at the given position
+        /// </summary>
+        /// <param name="Index">Position</param>
+        /// <param name="SectionName">Section name</param>
+        /// <returns>New section</returns>
         public IniSection InsertSection(int Index, string SectionName)
         {
             var Section = new IniSection(SectionName);
@@ -90,6 +136,11 @@ namespace IniParse
             return Section;
         }
 
+        /// <summary>
+        /// Inserts a section at the given position
+        /// </summary>
+        /// <param name="Index">Position</param>
+        /// <param name="Section">Existing section</param>
         public void InsertSection(int Index, IniSection Section)
         {
             if (_sections.Any(m => m.Name == Section.Name))
@@ -99,6 +150,11 @@ namespace IniParse
             _sections.Insert(Index, Section);
         }
 
+        /// <summary>
+        /// Adds a new section to the end of the list
+        /// </summary>
+        /// <param name="SectionName">Section name</param>
+        /// <returns>New Section</returns>
         public IniSection AddSection(string SectionName)
         {
             var Section = new IniSection(SectionName);
@@ -106,6 +162,10 @@ namespace IniParse
             return Section;
         }
 
+        /// <summary>
+        /// Adds an existing section to the list
+        /// </summary>
+        /// <param name="Section">Existing section</param>
         public void AddSection(IniSection Section)
         {
             //Null section is always first
@@ -123,6 +183,11 @@ namespace IniParse
             }
         }
 
+        /// <summary>
+        /// Exports the contents in this instance as an INI file
+        /// </summary>
+        /// <param name="SW">Location to write contents to</param>
+        /// <returns>Task</returns>
         public async Task ExportFile(StreamWriter SW)
         {
             var EmptySection = Sections.FirstOrDefault(m => m.Name == null);
@@ -143,6 +208,11 @@ namespace IniParse
             }
         }
 
+        /// <summary>
+        /// Reads an ini file asynchronously
+        /// </summary>
+        /// <param name="SR">Open Stream Reader</param>
+        /// <returns>Task</returns>
         private async Task ReadData(StreamReader SR)
         {
             int LineCount = 0;
@@ -238,6 +308,11 @@ namespace IniParse
 
         #region Static Members
 
+        /// <summary>
+        /// Loads an ini file asynchronously from a file
+        /// </summary>
+        /// <param name="FileName">File name</param>
+        /// <returns>INI file</returns>
         public static async Task<IniFile> FromFile(string FileName)
         {
             var IF = new IniFile();
@@ -247,6 +322,12 @@ namespace IniParse
             }
             return IF;
         }
+        /// <summary>
+        /// Loads an ini file asynchronously from a stream
+        /// </summary>
+        /// <param name="IniContent">INI stream</param>
+        /// <param name="IniEncoding">Stream encoding, UTF-8 by default</param>
+        /// <returns>INI file</returns>
         public static async Task<IniFile> FromFile(Stream IniContent, Encoding IniEncoding = null)
         {
             var IF = new IniFile();
