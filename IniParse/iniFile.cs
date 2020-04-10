@@ -38,7 +38,8 @@ namespace IniParse
         /// </summary>
         /// <remarks>
         /// This has no effect when exporting to file,
-        /// it only affects loading, searching and editing
+        /// it only affects loading, searching and editing.
+        /// This setting propagates to the sections when loading but not when it's changed later.
         /// </remarks>
         public CaseSensitivity CaseHandling { get; set; } = CaseSensitivity.AsIs;
 
@@ -80,6 +81,75 @@ namespace IniParse
             get
             {
                 return Sections.FirstOrDefault(m => SecEq(m.Name, name));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a setting directly
+        /// </summary>
+        /// <param name="SectionName">Section name</param>
+        /// <param name="SettingName">Setting name</param>
+        /// <returns>Setting value, null if setting and/or section not found</returns>
+        /// <remarks>Setting a value to null deletes it, and the section if no settings remain</remarks>
+        public string this[string SectionName, string SettingName]
+        {
+            get
+            {
+                var S = _sections.FirstOrDefault(m => SecEq(m.Name, SectionName));
+                if (S != null)
+                {
+                    var Setting = S[SettingName];
+                    if (Setting != null)
+                    {
+                        return Setting.Value;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                //Setting name must be set
+                if (SettingName == null)
+                {
+                    throw new ArgumentException("Setting name can't be null");
+                }
+                var S = _sections.FirstOrDefault(m => SecEq(m.Name, SectionName));
+                if (S == null)
+                {
+                    //This is an attempt to delete. Cancel here because the section doesn't exists
+                    if (value == null)
+                    {
+                        return;
+                    }
+                    //Add new section
+                    S = AddSection(SectionName);
+                }
+                if (value == null)
+                {
+                    //Delete a setting
+                    var Setting = S[SettingName];
+                    if (Setting != null)
+                    {
+                        S.Settings.Remove(Setting);
+                    }
+                    if (S.Settings.Count == 0)
+                    {
+                        _sections.Remove(S);
+                    }
+                }
+                else
+                {
+                    //Add/Update a setting
+                    var Setting = S[SettingName];
+                    if (Setting == null)
+                    {
+                        S.Settings.Add(new IniSetting(SettingName, value));
+                    }
+                    else
+                    {
+                        Setting.Value = value;
+                    }
+                }
             }
         }
 
@@ -417,7 +487,7 @@ namespace IniParse
                 }
             } while (Line != null);
             //Apply case handling to all sections
-            foreach(var Entry in TempSections)
+            foreach (var Entry in TempSections)
             {
                 Entry.CaseHandling = CaseHandling;
             }

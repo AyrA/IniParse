@@ -102,6 +102,15 @@ namespace IniParse
         }
 
         /// <summary>
+        /// Removes all settings with the given name according to 
+        /// </summary>
+        /// <param name="SettingName"></param>
+        public void RemoveSettings(string SettingName)
+        {
+            Settings.RemoveAll(m => SetEq(m.Name, SettingName));
+        }
+
+        /// <summary>
         /// Exports this section
         /// </summary>
         /// <param name="SW">Location to write contents to</param>
