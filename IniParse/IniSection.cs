@@ -97,6 +97,22 @@ namespace IniParse
             }
         }
 
+        /// <summary>
+        /// Sorts the settings in this section
+        /// </summary>
+        /// <param name="ascending">Sort ascending</param>
+        public void Sort(bool Ascending = true)
+        {
+            if (Ascending)
+            {
+                Settings.Sort((m, n) => m.Name.CompareTo(n.Name));
+            }
+            else
+            {
+                Settings.Sort((n, m) => m.Name.CompareTo(n.Name));
+            }
+        }
+
         #region Overrides
 
         /// <summary>

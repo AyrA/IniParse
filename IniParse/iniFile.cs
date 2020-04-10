@@ -247,6 +247,39 @@ namespace IniParse
         }
 
         /// <summary>
+        /// Sorts the sections in this file
+        /// </summary>
+        /// <param name="Ascending">Sort section names ascending</param>
+        /// <param name="Recursive">Recursively sort sections too</param>
+        /// <remarks>The "null section" (if existing) is always first</remarks>
+        public void Sort(bool Ascending = true, bool Recursive = false)
+        {
+            var NullSection = _sections.FirstOrDefault(m => m.Name == null);
+
+            if (Ascending)
+            {
+                _sections = _sections.OrderBy(m => m.Name).ToList();
+            }
+            else
+            {
+                _sections = _sections.OrderByDescending(m => m.Name).ToList();
+            }
+            if(Recursive)
+            {
+                foreach(var s in _sections)
+                {
+                    s.Sort(Ascending);
+                }
+            }
+            //Null section is always first
+            if (NullSection != null)
+            {
+                _sections.Remove(NullSection);
+                _sections.Insert(0, NullSection);
+            }
+        }
+
+        /// <summary>
         /// Reads an ini file asynchronously
         /// </summary>
         /// <param name="SR">Open Stream Reader</param>
@@ -285,7 +318,7 @@ namespace IniParse
                     else if (Section.IsMatch(Line))
                     {
                         var SectionName = Section.Match(Line).Groups[1].Value;
-                        if(WhitespaceHandling.HasFlag(WhitespaceMode.TrimSections))
+                        if (WhitespaceHandling.HasFlag(WhitespaceMode.TrimSections))
                         {
                             SectionName = SectionName.Trim();
                         }
