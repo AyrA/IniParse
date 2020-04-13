@@ -211,6 +211,8 @@ Use complex mode for these cases:
 - Accessing and modifying multiple settings that have the same name
 - Reordering sections
 
+<!--This comment is here to fix a github rendering error -->
+
 	//Open the file
 	IniFile IF = new IniFile("Test.INI");
 	//Add a new setting
@@ -219,7 +221,7 @@ Use complex mode for these cases:
 	//Read a setting
 	string Value = IS["Setting"].Value;
 	//Remove a section
-	IF.RemoveSection("SomeSectionName")
+	IF.RemoveSection("SomeSectionName");
 
 Add/Insert of sections can be done either by the section name or a section object itself.
 If you use a name, a section will be created and returned (as seen in the example above).
