@@ -222,6 +222,7 @@ namespace IniParse
         public IniSection InsertSection(int Index, string SectionName)
         {
             var Section = new IniSection(SectionName);
+            Section.CaseHandling = CaseHandling;
             InsertSection(Index, Section);
             return Section;
         }
@@ -248,6 +249,7 @@ namespace IniParse
         public IniSection AddSection(string SectionName)
         {
             var Section = new IniSection(SectionName);
+            Section.CaseHandling = CaseHandling;
             AddSection(Section);
             return Section;
         }
@@ -372,11 +374,7 @@ namespace IniParse
             {
                 return true;
             }
-            else if (A == null)
-            {
-                return false;
-            }
-            else if (B == null)
+            else if (A == null || B == null)
             {
                 return false;
             }

@@ -161,11 +161,7 @@ namespace IniParse
             {
                 return true;
             }
-            else if (A == null)
-            {
-                return false;
-            }
-            else if (B == null)
+            else if (A == null || B == null)
             {
                 return false;
             }
