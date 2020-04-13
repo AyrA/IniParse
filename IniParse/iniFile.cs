@@ -43,6 +43,8 @@ namespace IniParse
         /// </remarks>
         public CaseSensitivity CaseHandling { get; set; } = CaseSensitivity.AsIs;
 
+        public InvalidLineMode InvalidLineHandling { get; set; } = InvalidLineMode.Throw;
+
         /// <summary>
         /// Gets all sections of this file
         /// </summary>
@@ -482,7 +484,18 @@ namespace IniParse
                     }
                     else
                     {
-                        throw new InvalidDataException($"Line {LineCount} is neither section, setting, comment, or empty: {Line}");
+                        switch (InvalidLineHandling)
+                        {
+                            case InvalidLineMode.Throw:
+                                throw new InvalidDataException($"Line {LineCount} is neither section, setting, comment, or empty: {Line}");
+                            case InvalidLineMode.Skip:
+                                break;
+                            case InvalidLineMode.Convert:
+                                Comments.Add(Line);
+                                break;
+                            default:
+                                throw new NotImplementedException(nameof(InvalidLineMode));
+                        }
                     }
                 }
             } while (Line != null);
