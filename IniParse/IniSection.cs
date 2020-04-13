@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ namespace IniParse
     /// <summary>
     /// Represents a section in an ini file
     /// </summary>
-    public class IniSection : Validateable
+    public class IniSection : Validateable, ICloneable
     {
         /// <summary>
         /// Gets or sets the name of the section
@@ -173,6 +174,21 @@ namespace IniParse
         }
 
         #region Overrides
+
+        public object Clone()
+        {
+            var Copy = new IniSection(Name);
+            Copy.CaseHandling = CaseHandling;
+            if (Comments != null)
+            {
+                Copy.Comments = (string[])Comments.Clone();
+            }
+            foreach (var Set in Settings)
+            {
+                Copy.Settings.Add((IniSetting)Set.Clone());
+            }
+            return Copy;
+        }
 
         /// <summary>
         /// Gets a string representation of this instance

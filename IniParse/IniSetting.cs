@@ -7,7 +7,7 @@ namespace IniParse
     /// <summary>
     /// Represents a single setting in an INI file
     /// </summary>
-    public class IniSetting : Validateable
+    public class IniSetting : Validateable, ICloneable
     {
         /// <summary>
         /// Gets or sets the comments for this setting
@@ -61,6 +61,16 @@ namespace IniParse
         }
 
         #region Overrides
+
+        public object Clone()
+        {
+            var Copy = new IniSetting(Name, Value);
+            if (Comments != null)
+            {
+                Copy.Comments = (string[])Comments.Clone();
+            }
+            return Copy;
+        }
 
         /// <summary>
         /// Gets a string representation of this instance
