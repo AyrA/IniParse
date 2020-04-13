@@ -10,6 +10,7 @@ namespace Test
             var IF = new IniParse.IniFile();
             IF.WhitespaceHandling = IniParse.WhitespaceMode.TrimNames | IniParse.WhitespaceMode.TrimSections;
             IF.CaseHandling = IniParse.CaseSensitivity.CaseInsensitiveSection;
+            IF.InvalidLineHandling = IniParse.InvalidLineMode.Skip;
             IF.Load(@"Test.INI").Wait();
             IF.Validate();
             HighlightFile(IF);
@@ -62,6 +63,10 @@ namespace Test
 
             HighlightFile(IF);
 
+            Console.Write(string.Empty.PadRight(Console.BufferWidth * 3, '#'));
+
+            Console.WriteLine("Trying to create an invalid setting");
+
             //Try to store an invalid value
             IF["[THIS_IS_VALID]", "THIS=IS=INVALID"] = "THIS=IS=VALID";
             try
@@ -71,11 +76,13 @@ namespace Test
             }
             catch (Exception ex)
             {
+                Console.ForegroundColor = ex is IniParse.ValidationException ? ConsoleColor.Green : ConsoleColor.Red;
                 Console.WriteLine("Validation failed: {0}", ex.Message);
                 foreach (var e in ex.Data.Keys)
                 {
                     Console.WriteLine("{0}={1}", e, ex.Data[e]);
                 }
+                Console.ResetColor();
             }
 
             Console.Error.WriteLine("#END");
