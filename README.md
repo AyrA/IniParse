@@ -125,7 +125,7 @@ Note that converting them into comments will prefix them with the chosen comment
 
 Default: Throw an exception
 
-## IniFile.CommentChar
+### IniFile.CommentChar
 
 Defines the character that indicates a comment.
 The default is usually correct, but some INI files require this to be `#`.
